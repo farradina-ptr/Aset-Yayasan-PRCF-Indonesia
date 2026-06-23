@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitoring Aset LPHD — PRCF Indonesia</title>
+<meta name="description" content="Data inventaris dan kondisi aset enam lokasi Lembaga Pengelola Hutan Desa (LPHD) dampingan PRCF Indonesia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --forest:#1d3b2f; --forest-2:#264e3e; --moss:#5a7d52;
+  --leaf:#7fa86b; --bark:#5b4636; --clay:#c66b3d; --sun:#d9a441;
+  --paper:#f5f2ea; --paper-2:#ece7d9; --ink:#22271f; --muted:#6b7268;
+  --line:#d8d2c4; --white:#fffdf8;
+  --good:#3f7d4e; --bad:#c0492f; --lost:#8a6d3b; --fix:#b9892a; --na:#9a9488;
+  --shadow:0 1px 2px rgba(29,59,47,.06),0 6px 24px rgba(29,59,47,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+a{color:inherit}
+
+/* ---------- Header ---------- */
+header.top{background:var(--forest);color:var(--paper);position:relative;overflow:hidden}
+header.top::before{content:"";position:absolute;inset:0;background:
+  radial-gradient(900px 400px at 88% -10%,rgba(217,164,65,.16),transparent 60%),
+  radial-gradient(700px 500px at -5% 120%,rgba(127,168,107,.18),transparent 60%);pointer-events:none}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;position:relative;z-index:2}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600;letter-spacing:.02em}
+.brand .mark{width:34px;height:34px;flex:none}
+.brand small{display:block;font-weight:400;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--leaf)}
+.nav .gh{font-size:13px;border:1px solid rgba(245,242,234,.3);padding:7px 14px;border-radius:99px;text-decoration:none;transition:.2s}
+.nav .gh:hover{background:rgba(245,242,234,.1)}
+.hero{padding:34px 0 54px;position:relative;z-index:2}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--sun);margin-bottom:16px}
+.hero h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(34px,5.5vw,60px);line-height:1.02;letter-spacing:-.01em;max-width:16ch}
+.hero p.lede{margin-top:18px;max-width:60ch;font-size:17px;color:rgba(245,242,234,.85)}
+.hero .meta{margin-top:22px;display:flex;gap:26px;flex-wrap:wrap;font-size:13px;color:rgba(245,242,234,.7);font-family:'JetBrains Mono',monospace}
+.hero .meta b{color:var(--leaf);font-weight:500}
+
+/* ---------- Stat band ---------- */
+.statband{background:var(--forest-2);position:relative;z-index:2}
+.statgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:rgba(245,242,234,.12)}
+.stat{background:var(--forest-2);padding:20px 18px;color:var(--paper)}
+.stat .n{font-family:'Fraunces',serif;font-size:30px;font-weight:600;line-height:1}
+.stat .l{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,242,234,.6);margin-top:7px}
+.stat .n.dot::before{content:"";display:inline-block;width:9px;height:9px;border-radius:99px;margin-right:8px;vertical-align:middle}
+.stat.good .n::before{background:var(--leaf)}
+.stat.bad .n::before{background:#e8836a}
+.stat.lost .n::before{background:var(--sun)}
+
+/* ---------- Controls ---------- */
+.controls{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--line);padding:14px 0;box-shadow:0 4px 14px rgba(29,59,47,0)}
+.controls.stuck{box-shadow:0 6px 18px rgba(29,59,47,.08)}
+.ctrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.search{flex:1;min-width:240px;position:relative}
+.search input{width:100%;padding:12px 14px 12px 42px;border:1.5px solid var(--line);border-radius:10px;background:var(--white);font-size:15px;font-family:inherit;color:var(--ink)}
+.search input:focus{outline:none;border-color:var(--moss);box-shadow:0 0 0 3px rgba(90,125,82,.15)}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+select{padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;background:var(--white);font-family:inherit;font-size:14px;color:var(--ink);cursor:pointer}
+select:focus{outline:none;border-color:var(--moss)}
+.count{font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+
+/* ---------- Location tabs ---------- */
+.loctabs{display:flex;gap:8px;flex-wrap:wrap;padding:22px 0 6px}
+.loctab{border:1.5px solid var(--line);background:var(--white);padding:9px 16px;border-radius:99px;font-size:14px;font-weight:500;cursor:pointer;transition:.18s;display:flex;align-items:center;gap:9px;color:var(--ink)}
+.loctab:hover{border-color:var(--moss)}
+.loctab.active{background:var(--forest);color:var(--paper);border-color:var(--forest)}
+.loctab .badge{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--paper-2);color:var(--forest);padding:1px 8px;border-radius:99px}
+.loctab.active .badge{background:rgba(245,242,234,.2);color:var(--paper)}
+
+/* ---------- Location summary card ---------- */
+.locsummary{margin:22px 0 8px;background:var(--white);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
+.locsummary h2{font-family:'Fraunces',serif;font-size:26px;font-weight:600}
+.locsummary .sub{color:var(--muted);font-size:14px;margin-top:3px}
+.condbar{display:flex;height:14px;border-radius:99px;overflow:hidden;margin:18px 0 14px;background:var(--paper-2)}
+.condbar span{display:block}
+.condlegend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
+.condlegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:middle}
+
+/* ---------- Table ---------- */
+.tablewrap{margin:14px 0 40px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--white);box-shadow:var(--shadow)}
+.tablescroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:840px}
+thead th{background:var(--paper-2);text-align:left;padding:13px 16px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--bark);font-weight:600;white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0}
+thead th .arr{opacity:.4;font-size:10px}
+tbody td{padding:13px 16px;border-top:1px solid var(--line);vertical-align:top}
+tbody tr:hover{background:var(--paper)}
+.item-name{font-weight:600}
+.item-spec{color:var(--muted);font-size:12.5px;margin-top:2px;max-width:380px}
+.kode{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--bark);white-space:nowrap}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill.Baik{background:#e3f0e3;color:var(--good)}
+.pill.Rusak{background:#fae3db;color:var(--bad)}
+.pill.Hilang{background:#f5ecd6;color:var(--lost)}
+.pill.Perbaikan{background:#faf0d2;color:var(--fix)}
+.pill.BelumTercatat{background:#ececea;color:var(--na)}
+.cat-tag{font-size:11px;color:var(--moss);font-weight:600;letter-spacing:.02em}
+.empty{padding:60px 20px;text-align:center;color:var(--muted)}
+.empty h3{font-family:'Fraunces',serif;font-size:22px;color:var(--ink);margin-bottom:6px}
+
+/* expandable detail row */
+tbody tr.main{cursor:pointer}
+tbody tr.detail td{background:var(--paper);padding:0;border-top:0}
+.detail-inner{padding:16px 16px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px 28px}
+.detail-inner .f{font-size:13px}
+.detail-inner .f span{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.timeline{grid-column:1/-1;display:flex;gap:0;margin-top:6px;flex-wrap:wrap}
+.tl{flex:1;min-width:96px;border-left:2px solid var(--line);padding:4px 0 4px 12px}
+.tl b{font-size:11px;color:var(--muted);display:block;font-weight:500}
+
+/* ---------- Footer ---------- */
+footer{background:var(--forest);color:rgba(245,242,234,.8);padding:40px 0;font-size:14px;margin-top:30px}
+footer .fgrid{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}
+footer h4{color:var(--paper);font-family:'Fraunces',serif;font-size:18px;margin-bottom:8px;font-weight:600}
+footer a{color:var(--leaf);text-decoration:none}
+footer .fine{margin-top:26px;padding-top:18px;border-top:1px solid rgba(245,242,234,.15);font-size:12px;color:rgba(245,242,234,.55);font-family:'JetBrains Mono',monospace}
+
+@media(max-width:860px){
+  .statgrid{grid-template-columns:repeat(3,1fr)}
+  .hero{padding:26px 0 40px}
+  .detail-inner{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){
+  .statgrid{grid-template-columns:repeat(2,1fr)}
+  .stat .n{font-size:24px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <nav class="nav">
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 40 40" fill="none">
+          <path d="M20 3C13 11 9 16 9 23a11 11 0 0022 0c0-7-4-12-11-20z" fill="#7fa86b"/>
+          <path d="M20 14v22" stroke="#1d3b2f" stroke-width="2" stroke-linecap="round"/>
+          <path d="M20 22l5-4M20 28l-5-4" stroke="#1d3b2f" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div>PRCF Indonesia<small>Monitoring Aset LPHD</small></div>
+      </div>
+      <a class="gh" href="#" id="ghlink" target="_blank" rel="noopener">Lihat di GitHub ↗</a>
+    </nav>
+    <div class="hero">
+      <div class="eyebrow">Daftar Aset · Hutan Desa · Kalimantan Barat</div>
+      <h1>Inventaris &amp; kondisi aset enam lokasi dampingan.</h1>
+      <p class="lede">Data pemantauan barang milik Lembaga Pengelola Hutan Desa (LPHD) — dari perlengkapan kantor hingga peralatan patroli lapangan — yang terbuka untuk diakses bersama oleh masyarakat, pengurus, dan mitra.</p>
+      <div class="meta" id="herometa"></div>
+    </div>
+  </div>
+</header>
+
+<div class="statband">
+  <div class="wrap">
+    <div class="statgrid" id="statgrid"></div>
+  </div>
+</div>
+
+<div class="controls" id="controls">
+  <div class="wrap">
+    <div class="ctrow">
+      <div class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="q" type="search" placeholder="Cari nama barang, kode aset, serial, atau pemasok…" autocomplete="off">
+      </div>
+      <select id="fcat"><option value="">Semua kategori</option></select>
+      <select id="fcond"><option value="">Semua kondisi</option></select>
+      <span class="count" id="count"></span>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="loctabs" id="loctabs"></div>
+  <div id="locsummary"></div>
+  <div class="tablewrap">
+    <div class="tablescroll">
+      <table>
+        <thead><tr>
+          <th data-k="nama">Barang <span class="arr">↕</span></th>
+          <th data-k="kode">Kode aset <span class="arr">↕</span></th>
+          <th data-k="kelompok">Kategori <span class="arr">↕</span></th>
+          <th data-k="jumlah">Jml <span class="arr">↕</span></th>
+          <th data-k="kondisi_terkini">Kondisi terkini <span class="arr">↕</span></th>
+          <th data-k="tahun_pengadaan">Tahun <span class="arr">↕</span></th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div style="max-width:42ch">
+        <h4>Tentang data ini</h4>
+        <p>Bersumber dari berkas pemantauan aset LPHD tahun Y1–Y3 yang dikelola PRCF Indonesia. Item bertanda “Rusak” atau “Hilang” menandakan perlu tindak lanjut berita acara.</p>
+      </div>
+      <div>
+        <h4>Lokasi dampingan</h4>
+        <p id="footloc"></p>
+      </div>
+      <div>
+        <h4>Akses &amp; pembaruan</h4>
+        <p>Situs statis, dapat di-host gratis di <a href="https://pages.github.com" target="_blank" rel="noopener">GitHub Pages</a>. Perbarui dengan mengganti berkas <code>data.json</code>.</p>
+      </div>
+    </div>
+    <div class="fine" id="footfine"></div>
+  </div>
+</footer>
+
+<script>
+const COND_ORDER=['Baik','Perbaikan','Rusak','Hilang','Belum Tercatat'];
+const COND_COLOR={'Baik':'#5a7d52','Perbaikan':'#b9892a','Rusak':'#c0492f','Hilang':'#d9a441','Belum Tercatat':'#9a9488'};
+let DB=null, curLoc='Semua', sortK='nama', sortDir=1;
+
+const $=s=>document.querySelector(s);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cls=s=>String(s).replace(/\s+/g,'');
+
+fetch('data.json').then(r=>r.json()).then(d=>{DB=d;init();})
+  .catch(e=>{$('#tbody').innerHTML='<tr><td colspan="6" class="empty"><h3>Data tidak termuat</h3><p>Pastikan berkas data.json berada di folder yang sama.</p></td></tr>';});
+
+function allItems(){let a=[];for(const k in DB.data)a=a.concat(DB.data[k]);return a;}
+
+function init(){
+  const items=allItems();
+  // hero meta
+  $('#herometa').innerHTML=
+    `<div><b>${items.length}</b> aset tercatat</div>`+
+    `<div><b>${DB.meta.lokasi.length}</b> lokasi</div>`+
+    `<div>Diperbarui <b>${DB.meta.digenerate}</b></div>`;
+  // global stats
+  const g=tally(items);
+  $('#statgrid').innerHTML=[
+    ['Total aset',items.length,''],
+    ['Kondisi baik',g['Baik']||0,'good'],
+    ['Rusak',g['Rusak']||0,'bad'],
+    ['Hilang',g['Hilang']||0,'lost'],
+    ['Perbaikan',g['Perbaikan']||0,''],
+    ['Belum tercatat',g['Belum Tercatat']||0,'']
+  ].map(([l,n,c])=>`<div class="stat ${c}"><div class="n ${c?'dot':''}">${n}</div><div class="l">${l}</div></div>`).join('');
+  // category filter
+  const cats=[...new Set(items.map(i=>i.kelompok))].sort();
+  $('#fcat').innerHTML='<option value="">Semua kategori</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join('');
+  $('#fcond').innerHTML='<option value="">Semua kondisi</option>'+COND_ORDER.map(c=>`<option>${c}</option>`).join('');
+  // location tabs
+  const locs=['Semua',...DB.meta.lokasi];
+  $('#loctabs').innerHTML=locs.map(l=>{
+    const n=l==='Semua'?items.length:DB.data[l].length;
+    return `<button class="loctab ${l===curLoc?'active':''}" data-loc="${esc(l)}">${esc(l)}<span class="badge">${n}</span></button>`;
+  }).join('');
+  // footer
+  $('#footloc').innerHTML=DB.meta.lokasi.join(' · ');
+  $('#footfine').textContent=`Sumber: ${DB.meta.sumber} · Digenerate ${DB.meta.digenerate} · ${items.length} baris data`;
+
+  // events
+  $('#q').addEventListener('input',render);
+  $('#fcat').addEventListener('change',render);
+  $('#fcond').addEventListener('change',render);
+  document.querySelectorAll('thead th').forEach(th=>th.addEventListener('click',()=>{
+    const k=th.dataset.k; sortDir=(sortK===k)?-sortDir:1; sortK=k; render();
+  }));
+  $('#loctabs').addEventListener('click',e=>{
+    const b=e.target.closest('.loctab'); if(!b)return;
+    curLoc=b.dataset.loc;
+    document.querySelectorAll('.loctab').forEach(x=>x.classList.toggle('active',x===b));
+    render();
+  });
+  // sticky shadow
+  const obs=new IntersectionObserver(([e])=>$('#controls').classList.toggle('stuck',e.intersectionRatio<1),{threshold:[1]});
+  // github link placeholder
+  $('#ghlink').href='#';
+  render();
+}
+
+function tally(items){const t={};items.forEach(i=>{t[i.kondisi_terkini]=(t[i.kondisi_terkini]||0)+1});return t;}
+
+function currentSet(){
+  if(curLoc==='Semua')return allItems();
+  return DB.data[curLoc]||[];
+}
+
+function render(){
+  const q=$('#q').value.trim().toLowerCase();
+  const fc=$('#fcat').value, fk=$('#fcond').value;
+  let set=currentSet().slice();
+  if(fc)set=set.filter(i=>i.kelompok===fc);
+  if(fk)set=set.filter(i=>i.kondisi_terkini===fk);
+  if(q)set=set.filter(i=>(
+    (i.nama+' '+i.spesifikasi+' '+i.kode+' '+i.serial+' '+i.pemasok+' '+i.lokasi).toLowerCase().includes(q)
+  ));
+  set.sort((a,b)=>{
+    let x=a[sortK]||'',y=b[sortK]||'';
+    if(sortK==='jumlah'){x=+x||0;y=+y||0;return (x-y)*sortDir;}
+    return String(x).localeCompare(String(y),'id')*sortDir;
+  });
+  renderSummary();
+  $('#count').textContent=`${set.length} ditampilkan`;
+  // table
+  if(!set.length){
+    $('#tbody').innerHTML=`<tr><td colspan="6" class="empty"><h3>Tidak ada hasil</h3><p>Coba ubah kata kunci atau filter.</p></td></tr>`;
+    return;
+  }
+  $('#tbody').innerHTML=set.map((i,idx)=>{
+    const cond=esc(i.kondisi_terkini);
+    return `<tr class="main" data-i="${idx}">
+      <td><div class="item-name">${esc(i.nama)}</div><div class="item-spec">${esc(i.spesifikasi)}</div></td>
+      <td><span class="kode">${esc(i.kode||'—')}</span></td>
+      <td><span class="cat-tag">${esc(i.kelompok)}</span></td>
+      <td>${esc(i.jumlah)} <span style="color:var(--muted);font-size:12px">${esc(i.satuan)}</span></td>
+      <td><span class="pill ${cls(cond)}">${cond}</span></td>
+      <td>${esc(i.tahun_pengadaan||'—')}</td>
+    </tr>
+    <tr class="detail" hidden><td colspan="6"><div class="detail-inner">
+      <div class="f"><span>Serial</span>${esc(i.serial||'—')}</div>
+      <div class="f"><span>Lokasi</span>${esc(i.lokasi||'—')}</div>
+      <div class="f"><span>Penanggung jawab</span>${esc(i.penanggung_jawab||'—')}</div>
+      <div class="f"><span>Program</span>${esc(i.program||'—')}</div>
+      <div class="f"><span>Pemasok</span>${esc(i.pemasok||'—')}</div>
+      <div class="f"><span>Tanggal pembelian</span>${esc(i.tanggal||'—')}</div>
+      <div class="f"><span>Garansi</span>${esc(i.garansi||'—')}</div>
+      <div class="timeline">${Object.entries(i.kondisi).map(([y,v])=>`<div class="tl"><b>${esc(y)}</b>${v?`<span class="pill ${cls(v.replace(/\s+/g,''))}" style="margin-top:4px">${esc(v)}</span>`:'<span style="color:var(--na);font-size:12px">—</span>'}</div>`).join('')}</div>
+    </div></td></tr>`;
+  }).join('');
+  // expand toggles
+  $('#tbody').querySelectorAll('tr.main').forEach(tr=>{
+    tr.addEventListener('click',()=>{const d=tr.nextElementSibling;d.hidden=!d.hidden;});
+  });
+}
+
+function renderSummary(){
+  const set=currentSet();
+  const t=tally(set);
+  const total=set.length||1;
+  const bar=COND_ORDER.map(c=>{const n=t[c]||0;if(!n)return'';const pct=(n/total*100).toFixed(2);return `<span style="width:${pct}%;background:${COND_COLOR[c]}" title="${c}: ${n}"></span>`;}).join('');
+  const legend=COND_ORDER.map(c=>{const n=t[c]||0;return `<div><i style="background:${COND_COLOR[c]}"></i>${c} <b>${n}</b></div>`;}).join('');
+  const title=curLoc==='Semua'?'Seluruh lokasi':curLoc;
+  $('#locsummary').innerHTML=`<div class="locsummary">
+    <h2>${esc(title)}</h2>
+    <div class="sub">${set.length} aset · ${[...new Set(set.map(i=>i.kelompok))].length} kategori</div>
+    <div class="condbar">${bar}</div>
+    <div class="condlegend">${legend}</div>
+  </div>`;
+}
+</script>
+</body>
+</html>
